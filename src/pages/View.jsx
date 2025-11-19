@@ -1,35 +1,71 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faStar } from '@fortawesome/free-solid-svg-icons'
-import { Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { addToWishlist } from '../redux/slices/wishlistSlice'
 
 
 function View() {
+  const userWishlist = useSelector(state=>state.wishlistReducer)
+  const dispatch = useDispatch()
+  // get product id from url
+  const {id} = useParams()
+  console.log(id);
+  // state for storing product to be view
+  const [product,setProduct] = useState({})
+  console.log(product);
+
+  useEffect(()=>{
+    if(sessionStorage.getItem("products")){
+      const allProducts = JSON.parse(sessionStorage.getItem("products"))
+      setProduct(allProducts.find(item=>item.id==id))
+    }
+  },[])
+  
+  const handleWishlist = ()=>{
+    const exisingProduct = userWishlist?.find(item=>item.id==id)
+    if(exisingProduct){
+      alert("product already added to wishlist...!")
+    }else{
+      // add product to wishlist in redux store - dispatch action
+      dispatch(addToWishlist(product))
+    }
+  }
+  
   return (
     <>
     <Header/>
     <div className='container py-5'>
       <div className="row my-5">
         <div className="col-md-6 text-center">
-          <img className='img-fluid' src="https://m.media-amazon.com/images/I/71kVWZfiVxL.jpg" alt="" />
+          <img className='img-fluid' src={product?.thumbnail} alt="" />
           <div className="d-flex align-items-center justify-content-between my-3">
-            <Link to={'/wishlist'}><button className='btn btn-outline-primary'>ADD TO WISHLIST</button></Link>
-            <Link to={'/cart'}><button className='btn btn-outline-success'>ADD TO CART</button></Link>
+            <button onClick={handleWishlist} className='btn btn-outline-primary'>ADD TO WISHLIST</button>
+            <button className='btn btn-outline-success'>ADD TO CART</button>
           </div>
         </div>
         <div className="col-md-6">
-          <h1>GAMING CONTROLLER</h1>
-          <p className='text-danger fw-bold fs-3'>$ 16.99</p>
-          <p>Brand : Zebronics</p>
-          <p>Category : Gaming</p>
-          <p><span className='fw-bold'>Description</span> : A gaming controller is a handheld device used to interact with video games. It typically features two analog sticks for smooth movement, a directional pad (D-pad), and several action buttons for performing in-game tasks like jumping, shooting, or interacting. Most controllers also include shoulder and trigger buttons for additional control options. Designed to fit comfortably in your hands, a controller offers precise input, quick reactions, and an immersive gaming experience. Modern controllers may also include vibration feedback, wireless connectivity, and customizable buttons to enhance gameplay. </p>
+          <h1 className='fw-bold'>{product?.title}</h1>
+          <p className='text-danger fw-bold fs-3'>$ {product?.price}</p>
+          <p><span className='fw-bold'>Brand</span> : {product?.brand}</p>
+          <p><span className='fw-bold'>Category</span> : {product?.category}</p>
+          <p><span className='fw-bold'>Description</span> :{product?.description} </p>
 
           <h4 className='fw-bold my-3'>Client Reviews</h4>
-          <div className='border rounded p-3 shadow'>
-            <p><span className='fw-bold'>user12345</span> : recommended!</p>
-            <p>Rating : 3<FontAwesomeIcon icon={faStar} className='text-warning'/></p>
+          {/* duplicate div */}
+          {
+            product?.reviews?.length>0?
+            product?.reviews.map((item,index)=>(
+              <div key={index} className='border rounded p-3 my-2 shadow'>
+            <p><span className='fw-bold'>{item?.reviewerName}</span> : {item?.comment}</p>
+            <p>Rating : {item?.rating}<FontAwesomeIcon icon={faStar} className='text-warning'/></p>
           </div>
+            ))
+            :
+            <div>No client reviews are available</div>
+          }
         </div>
       </div>
     </div>

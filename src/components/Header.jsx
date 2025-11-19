@@ -2,12 +2,18 @@ import { faCartShopping, faHeart, faTruckFast } from '@fortawesome/free-solid-sv
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import { Nav,Container,Navbar, Badge } from 'react-bootstrap'
+import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 
 
 
 function Header() {
+
+const userWishlist = useSelector(state=>state.wishlistReducer)
+console.log(userWishlist);
+
+
   return (
     <Navbar expand="lg" className="bg-success position-fixed w-100 z-1">
       <Container>
@@ -15,7 +21,7 @@ function Header() {
         <Navbar.Toggle aria-controls="basic-navbar-nav" className='bg-light' />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto d-md-flex align-items-md-center">
-          <Link to={'/wishlist'}className='text-decoration-none text-light fw-bold '><FontAwesomeIcon icon={faHeart} className='text-danger me-1'/>WISHLIST<Badge pill bg='dark' className='ms-1 me-3'>9</Badge></Link>
+          <Link to={'/wishlist'}className='text-decoration-none text-light fw-bold '><FontAwesomeIcon icon={faHeart} className='text-danger me-1'/>WISHLIST<Badge pill bg='dark' className='ms-1 me-3'>{userWishlist?.length}</Badge></Link>
           <Link to={'/cart'}className='text-decoration-none text-light fw-bold'><FontAwesomeIcon icon={faCartShopping} className='text-secondary me-1'/>CART<Badge pill bg='dark' className='ms-1'>9</Badge></Link>
           </Nav>
         </Navbar.Collapse>

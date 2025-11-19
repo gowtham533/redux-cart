@@ -25,7 +25,7 @@ function Home() {
           {
             loading?
             <div className='text-center my-4 fw-bolder fs-5'>
-              <img width={'500px'} className='me-3' src="https://cdn.pixabay.com/animation/2023/10/08/03/19/03-19-26-213_512.gif" alt="" />Loading...
+              <img width={'500px'} className='me-3' src="https://cdn.pixabay.com/animation/2023/10/08/03/19/03-19-26-213_512.gif" alt="" />
             </div>
             :
           
