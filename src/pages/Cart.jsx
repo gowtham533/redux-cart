@@ -1,17 +1,72 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
+import { useDispatch, useSelector } from 'react-redux'
+import { removeWishlistItem } from '../redux/slices/wishlistSlice'
+import { Link, useNavigate } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import { decrementCartItem, emptyCart, incrementCartItem, removeCartItem } from '../redux/slices/cartSlice'
+
+
+
+
 
 function Cart() {
+
+  const userCart = useSelector(state=>state.cartReducer)
+  const [sum,setSum] = useState(0)
+  const navigate = useNavigate()
+  useEffect(()=>{
+    // console.log(userCart?.reduce((acc,curr)=>acc+curr.totalPrice,0));
+    setSum(userCart?.reduce((acc,curr)=>acc+curr.totalPrice,0)) 
+  },[userCart])
+
+  const handleDecrementCart = (product)=>{
+    if(product.quantity>1){
+      dispatch(decrementCartItem(product))
+    }else{
+      dispatch(removeCartItem(product.id))
+    }
+  }
+
+  const checkout = ()=>{
+    dispatch(emptyCart())
+    Swal.fire({
+      title:"order placed successfully",
+      text:"thank you purchasing with us",
+      icon:"success",
+      confirmButtonText:"done"
+    })
+  }
+
+  const dispatch = useDispatch()
+  const handleCart = (product)=>{
+      const existingProduct = userCart?.find(item=>item.id==product.id)
+      dispatch(addToCart(product))
+      dispatch(removeWishlistItem(product.id))
+      Swal.fire({
+          title: 'Completed!',
+          text: existingProduct?`Quantity of ${product.title} is updated successfully` : `product added to cart`,
+          icon: 'success',
+          confirmButtonText: 'Done'
+        })
+    }
+
   return (
     <>
       <Header/>
       <div className="container py-5">
+        {
+          userCart?.length>0?
+        
         <div className="my-5">
+          
           <h1 className="text-danger fw-bold">Cart Summary</h1>
+              
           <div className="row mt-5">
-            <div className="col-md-8 border rounded p-5 shadow">
+            
+                <div className="col-md-8 border rounded p-5 shadow">
             <table className="table">
               <thead>
                 <tr>
@@ -24,26 +79,35 @@ function Cart() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>1</td>
-                  <td>Title</td>
-                  <td><img width={'50px'} height={'50px'} src="https://m.media-amazon.com/images/I/71kVWZfiVxL.jpg" alt="" /></td>
+                {
+                  userCart?.map((product,index)=>(
+                    <tr>
+                  <td>{index+1}</td>
+                  <td>{product?.title}</td>
+                  <td><img width={'50px'} height={'50px'} src={product?.thumbnail} alt="" /></td>
                   <td>
                     <div className="d-flex">
-                      <button className="btn btn-outline-white fs-3 p-1 fw-bold">+</button>
-                      <input style={{width:"50px"}} value={10} type="text" className='form-control text-center' readOnly />
-                      <button className="btn btn-outline-white fs-3 p-1 fw-bold">-</button>
+                      <button onClick={()=>dispatch(incrementCartItem(product))} className="btn btn-outline-white fs-3 p-1 fw-bold">+</button>
+                      <input style={{width:"50px"}} value={product?.quantity} type="text" className='form-control text-center' readOnly />
+                      <button onClick={()=>handleDecrementCart(product)} className="btn btn-outline-white fs-3 p-1 fw-bold">-</button>
                     </div>
                   </td>
-                  <td>$ 16.99</td>
-                  <td><button className="btn btn-outline-danger p-2"><FontAwesomeIcon icon={faTrash}/></button></td>
+                  <td>$ {product?.totalPrice}</td>
+                  <td><button onClick={()=>dispatch(removeCartItem(product?.id))} className="btn btn-outline-danger p-2"><FontAwesomeIcon icon={faTrash}/></button></td>
                 </tr>
+                  ))
+                }
               </tbody>
             </table>
+            <div className="float-end my-2">
+              <button onClick={()=>dispatch(emptyCart())} className="btn btn-outline-danger me-2">EMPTY CART</button>
+              <Link to={'/'}  className="btn btn-outline-success me-2">SHOP MORE</Link>
             </div>
+            </div>
+            
             <div className="col-md-4">
               <div className="border rounded shadow p-5">
-                <h3 className="fw-bold">Total Amount : <span className='text-danger'>$ 16.99</span></h3>
+                <h3 className="fw-bold">Total Amount : <span className='text-danger'>$ {sum}</span></h3>
                 <hr />
                 <div className="d-grid mt-2">
                   <button className='btn btn-outline-success'>CHECK OUT</button>
@@ -51,7 +115,15 @@ function Cart() {
               </div>
             </div>
           </div>
+          
         </div>
+        :
+        <div style={{height:'80vh'}} className='d-flex align-items-center justify-content-center flex-column my-5 py-5'>
+                  <img className='w-50' src="https://assets-v2.lottiefiles.com/a/0953d504-117d-11ee-aa49-1f149204cb5f/9uZcoEJaoF.gif" alt="" />
+                  <h3> Your Cart is Empty</h3>
+                  <Link to={'/'} className='btn btn-outline-success'>Add More Products</Link>
+                </div>
+        }
       </div>
     </>
   )

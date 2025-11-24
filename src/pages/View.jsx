@@ -5,10 +5,14 @@ import { faStar } from '@fortawesome/free-solid-svg-icons'
 import { useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { addToWishlist } from '../redux/slices/wishlistSlice'
+import Swal from 'sweetalert2'
+import { addToCart } from '../redux/slices/cartSlice'
 
 
 function View() {
   const userWishlist = useSelector(state=>state.wishlistReducer)
+  const userCart = useSelector(state=>state.cartReducer)
+
   const dispatch = useDispatch()
   // get product id from url
   const {id} = useParams()
@@ -25,13 +29,30 @@ function View() {
   },[])
   
   const handleWishlist = ()=>{
-    const exisingProduct = userWishlist?.find(item=>item.id==id)
-    if(exisingProduct){
-      alert("product already added to wishlist...!")
+    const existingProduct = userWishlist?.find(item=>item.id==id)
+    if(existingProduct){
+      // alert("product already added to wishlist...!")
+      Swal.fire({
+        title: 'Sorry!',
+        text: 'product already added to wishlist...!',
+        icon: 'error',
+        confirmButtonText: 'Good job'
+      })
     }else{
       // add product to wishlist in redux store - dispatch action
       dispatch(addToWishlist(product))
     }
+  }
+
+  const handleCart = ()=>{
+    const existingProduct = userCart?.find(item=>item.id==id)
+    dispatch(addToCart(product))
+    Swal.fire({
+        title: 'Completed!',
+        text: existingProduct?`Quantity of ${product.title} is updated successfully` : `product added to cart`,
+        icon: 'success',
+        confirmButtonText: 'Done'
+      })
   }
   
   return (
@@ -43,7 +64,7 @@ function View() {
           <img className='img-fluid' src={product?.thumbnail} alt="" />
           <div className="d-flex align-items-center justify-content-between my-3">
             <button onClick={handleWishlist} className='btn btn-outline-primary'>ADD TO WISHLIST</button>
-            <button className='btn btn-outline-success'>ADD TO CART</button>
+            <button onClick={handleCart} className='btn btn-outline-success'>ADD TO CART</button>
           </div>
         </div>
         <div className="col-md-6">
